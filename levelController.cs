@@ -55,8 +55,10 @@ public class levelController : MonoBehaviour {
     public GameObject plane;
     
     public static bool isGameOver;
+    public bool isPaused = false;
 
     public LevelChanger lvlChanger;
+
 
 	// Use this for initialization
 	void Start ()
@@ -96,30 +98,7 @@ public class levelController : MonoBehaviour {
                 numberOfBalls = ballsHolder.transform.childCount;
                 //            ////Debug.Log(numberOfBalls);
             }
-            bombCounter.text = PlayerPrefs.GetInt("BombCounter").ToString();
-            frozenCounter.text = PlayerPrefs.GetInt("FrozenCounter").ToString();
-            if (selectingItemPos == 1)
-            {
-                bombItem.GetComponent<Button>().interactable = false;
-                if (Input.GetButtonDown("Fire1"))
-                {
-                    RaycastHit hit;
-                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                    if (Physics.Raycast(ray, out hit))
-                    {
-                        touchPos = hit.point;
-                    }
-                    //touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    selectingItemPos = 0;
-                    Debug.Log(touchPos);
-                    GameObject newBomb = Instantiate(bomb, new Vector3(touchPos.x, touchPos.y, -2f), Quaternion.identity);
-                    Destroy(newBomb, 0.2f);
-                    touchPos = new Vector3(0, 0, 0);
-                    bombItem.GetComponent<Button>().interactable = true;
-                    noti.SetActive(false);
-                }
-
-            }
+            
             //game over
             if (numberOfBalls == 0)
             {
@@ -138,8 +117,50 @@ public class levelController : MonoBehaviour {
                 score.text = "Score: " + t;
             }
         }
+        else
+        {
+            if (endlessLife == 2)
+            {
+                endlessLife3.SetActive(false);
+            }
+            if (endlessLife == 1)
+            {
+                endlessLife3.SetActive(false);
+                endlessLife2.SetActive(false);
+            }
+            if (endlessLife == 0)
+            {
+                endlessLife3.SetActive(false);
+                endlessLife2.SetActive(false);
+                endlessLife1.SetActive(false);
+                endlessGameOver();
+            }
+        }
+        bombCounter.text = PlayerPrefs.GetInt("BombCounter").ToString();
+        frozenCounter.text = PlayerPrefs.GetInt("FrozenCounter").ToString();
+        if (selectingItemPos == 1)
+        {
+            bombItem.GetComponent<Button>().interactable = false;
+            if (Input.GetButtonDown("Fire1"))
+            {
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out hit))
+                {
+                    touchPos = hit.point;
+                }
+                //touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                selectingItemPos = 0;
+                Debug.Log(touchPos);
+                GameObject newBomb = Instantiate(bomb, new Vector3(touchPos.x, touchPos.y, -2f), Quaternion.identity);
+                Destroy(newBomb, 0.2f);
+                touchPos = new Vector3(0, 0, 0);
+                bombItem.GetComponent<Button>().interactable = true;
+                noti.SetActive(false);
+            }
 
-        
+        }
+
         if (Input.GetKey(KeyCode.Escape) && pauseBtn.activeSelf == true)
         {
             pause();
@@ -151,6 +172,10 @@ public class levelController : MonoBehaviour {
         if (Input.GetKey(KeyCode.Escape) && gameOverMenu.activeSelf == true)
         {
             quit();
+        }
+        if (isPaused && Time.timeScale != 0)
+        {
+            pause();
         }
     }
     IEnumerator FrozenItemActive()
@@ -171,72 +196,29 @@ public class levelController : MonoBehaviour {
             frozenTimer.text = "";
         }
     }
-
-    private void OnCollisionEnter(UnityEngine.Collision collision)
-    {
-        if(SceneManager.GetActiveScene().buildIndex == 14 && (collision.transform.tag == "MotherBall" || collision.transform.tag == "ChildBall" || 
-            collision.transform.tag == "BossBall" || collision.transform.tag == "ExplosionBall" || collision.transform.tag == "StickyBall"))
-        {
-            endlessLife--;
-        }
-        if (endlessLife == 2)
-        {
-            endlessLife3.SetActive(false);
-        }
-        if(endlessLife == 1)
-        {
-            endlessLife3.SetActive(false);
-            endlessLife2.SetActive(false);
-        }
-        if (endlessLife == 0)
-        {
-            endlessLife3.SetActive(false);
-            endlessLife2.SetActive(false);
-            endlessLife1.SetActive(false);
-            endlessGameOver();
-        }
-    }
+    
     public void endlessGameOver()
     {
-        int highScore = 0;
-        string conn = "URI=file:" + "jar:file://" + Application.dataPath + "!/assets/" + "db.s3db";
-        IDbConnection dbconn;
-        dbconn = (IDbConnection)new SqliteConnection(conn);
-        dbconn.Open(); //Open connection to the database.
-        IDbCommand dbcmd = dbconn.CreateCommand();
-        string sqlQuery = "SELECT score FROM user WHERE username =" + PlayerPrefs.GetString("CurrentUser", "");
-        dbcmd.CommandText = sqlQuery;
-        IDataReader reader = dbcmd.ExecuteReader();
-        while (reader.Read())
+        if (t < scoreController.currentScore)
         {
-            highScore = reader.GetInt32(0);
+            t++;
         }
-        reader.Close();
-        reader = null;
-        dbcmd.Dispose();
-        dbcmd = null;
-        if (Int32.Parse(score.text) > highScore)
+        if (t > scoreController.currentScore)
         {
-            sqlQuery = "UPDATE user SET score = " + Int32.Parse(score.text) + " WHERE username = " + PlayerPrefs.GetString("CurrentUser", "");
-            dbcmd.CommandText = sqlQuery;
-            reader = dbcmd.ExecuteReader();
-            while (reader.Read())
-            {
-                //
-            }
-            reader.Close();
-            reader = null;
-            dbcmd.Dispose();
-            dbcmd = null;
+            t--;
         }
-        dbconn.Close();
-        dbconn = null;
+        score.text = "Score: " + t;
         gameOverMenu.SetActive(true);
         pauseBtn.SetActive(false);
         bombItem.SetActive(false);
         frozenItem.SetActive(false);
         frostScreen.SetActive(false);
-        Time.timeScale = 1;
+        Time.timeScale = 0;
+        int highScore = PlayerPrefs.GetInt("HighScore", 0);
+        if (scoreController.currentScore > highScore)
+        {
+            PlayerPrefs.SetInt("HighScore", scoreController.currentScore);
+        }
     }
     public void gameOver()
     {
@@ -423,6 +405,10 @@ public class levelController : MonoBehaviour {
         //SceneManager.LoadScene(1 + SceneManager.GetActiveScene().buildIndex);
         lvlChanger.FadeToLvl(1 + SceneManager.GetActiveScene().buildIndex);
     }
+    public void OnApplicationPause()
+    {
+        //pause();
+    }
     public void pause()
     {
         pauseBtn.SetActive(false);
@@ -432,6 +418,7 @@ public class levelController : MonoBehaviour {
         quitBtn.SetActive(true);
         restartBtn.SetActive(true);
         Time.timeScale = 0;
+        Debug.Log("pause");
         plane.SetActive(true);
     }
     public void resume()
@@ -493,6 +480,15 @@ public class levelController : MonoBehaviour {
         isGameOver = false;
         Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    void OnApplicationFocus(bool hasFocus)
+    {
+        isPaused = !hasFocus;
+    }
+
+    void OnApplicationPause(bool pauseStatus)
+    {
+        isPaused = pauseStatus;
     }
     private void OnApplicationQuit()
     {

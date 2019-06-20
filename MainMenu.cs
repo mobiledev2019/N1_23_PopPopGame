@@ -46,7 +46,12 @@ public class MainMenu : MonoBehaviour {
     void Start()
     {
         //PlayerPrefs.DeleteAll();
-
+        PlayerPrefs.SetString("User", "namtd");
+        PlayerPrefs.SetString("Pass", "123456");
+        if (PlayerPrefs.GetInt("HighScore", 0) == 0)
+        {
+            PlayerPrefs.SetInt("HighScore", 100);
+        }
         if (PlayerPrefs.GetInt("LifeCounter", -1) == -1)
         {
             PlayerPrefs.SetInt("LifeCounter", 3);
@@ -79,24 +84,7 @@ public class MainMenu : MonoBehaviour {
             logInBtn.SetActive(false);
             logOutBtn.SetActive(true);
             //playOnlBtn.GetComponent<Button>().interactable = true;
-            string conn = "URI=file:" + "jar:file://" + Application.dataPath + "!/assets/" + "db.s3db";
-            IDbConnection dbconn;
-            dbconn = (IDbConnection)new SqliteConnection(conn);
-            dbconn.Open(); //Open connection to the database.
-            IDbCommand dbcmd = dbconn.CreateCommand();
-            string sqlQuery = "SELECT score FROM user WHERE username =" + PlayerPrefs.GetString("CurrentUser", "");
-            dbcmd.CommandText = sqlQuery;
-            IDataReader reader = dbcmd.ExecuteReader();
-            while (reader.Read())
-            {
-                endlessHighScore.text = "Play Endlessn\n"+reader.GetInt32(0);
-            }
-            reader.Close();
-            reader = null;
-            dbcmd.Dispose();
-            dbcmd = null;
-            dbconn.Close();
-            dbconn = null;
+            endlessHighScore.text = "Play Endless\nHigh Score: " + PlayerPrefs.GetInt("HighScore");
         }
         for (int i = 0; i < 12; i++)
         {
@@ -261,17 +249,21 @@ public class MainMenu : MonoBehaviour {
     }
     public void logOut()
     {
-        PlayerPrefs.SetString("Email", "");
-        PlayerPrefs.SetString("Password", "");
+        PlayerPrefs.SetString("CurrentUser", "");
         PlayerPrefs.SetInt("isLoggedIn", 0);
         logInBtn.SetActive(true);
         logOutBtn.SetActive(false);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         //playOnlBtn.GetComponent<Button>().interactable = false;
     }
     public void playOnline()
     {
         waitingRoom.SetActive(true);
         levelMenu.SetActive(false);
+    }
+    public void playEndless()
+    {
+        SceneManager.LoadScene(14);
     }
     public void openPurchaseMenu()
     {

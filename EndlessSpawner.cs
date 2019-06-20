@@ -10,9 +10,11 @@ public class EndlessSpawner : MonoBehaviour {
     public float spawnX = 0;
 
     // Use this for initialization
-    void Start () {
-		
-	}
+    void Start ()
+    {
+        Debug.Log("Start spawning");
+        StartCoroutine(Wait());
+    }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
@@ -39,5 +41,9 @@ public class EndlessSpawner : MonoBehaviour {
         Rigidbody rb = ball.GetComponent<Rigidbody>();
         rb.AddForce(Random.Range(-60, 60), Random.Range(-125, -175), 0);
         spawnX = Random.Range(-5.5f, 5.5f);
+    }
+    IEnumerator Wait()
+    {
+        yield return new WaitForSeconds(2);
     }
 }

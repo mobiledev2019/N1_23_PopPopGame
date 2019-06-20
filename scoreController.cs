@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class scoreController : MonoBehaviour {
     public int maxScore;
@@ -32,6 +33,10 @@ public class scoreController : MonoBehaviour {
 
     public void subScore()
     {
+        if(SceneManager.GetActiveScene().buildIndex == 14)
+        {
+            levelController.endlessLife--;
+        }
         currentScore -= 10;
         showScore();
     }

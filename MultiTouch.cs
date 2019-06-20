@@ -18,7 +18,7 @@ public class MultiTouch : MonoBehaviour {
     private int boss;
     private float timer, startTime;
     private TextMesh timeText;
-    private scoreController score;
+    public scoreController score;
     private OnlineScoreController onlineScore;
 
     private bool isDragging;
@@ -52,6 +52,8 @@ public class MultiTouch : MonoBehaviour {
         if (!gameObject.CompareTag("Ground") && !gameObject.CompareTag("WallCyan")
             && !gameObject.CompareTag("WallOrange") && !gameObject.CompareTag("Map")
             && !gameObject.CompareTag("plane")) comboInfo = GetComponentInParent<ComboInfo>();
+
+        
     }
 	
 	// Update is called once per frame
@@ -63,7 +65,6 @@ public class MultiTouch : MonoBehaviour {
             Instantiate(explosion, gameObject.transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
-        
     }
 
     private Vector3 getDeltaPosition()
@@ -83,7 +84,6 @@ public class MultiTouch : MonoBehaviour {
                 break;
 
             case "ChildBall":
-                ////Debug.Log("child");
                 if (comboInfo.FirstPoint)
                 {
                     //Debug.Log("first point hit");

@@ -40,7 +40,14 @@ public class spawnBall : MonoBehaviour {
     void Start () {
         GameObject t1 = new GameObject("temp");
         t = Instantiate(t1, ballsHolder.transform);
-        StartCoroutine("SpawnBall");
+        if (SceneManager.GetActiveScene().buildIndex == 14)
+        {
+            StartCoroutine("SpawnBallEndless");
+        }
+        else
+        {
+            StartCoroutine("SpawnBall");
+        }
 	}
 	
 	// Update is called once per frame
@@ -97,5 +104,21 @@ public class spawnBall : MonoBehaviour {
 
         //yield return new WaitForSeconds(0.7f);
         //}
+    }
+    IEnumerator SpawnBallEndless()
+    {
+        yield return new WaitForSeconds(1.5f);
+        while (true) {
+            int index = Random.Range(0, balls.Count);
+            pos = new Vector3(Random.Range(left.x, right.x), left.y, left.z);
+            GameObject go = Instantiate(balls[index].ball, pos, Quaternion.identity, ballsHolder.transform);
+            Rigidbody rb = go.GetComponent<Rigidbody>();
+            rb.AddForce(Random.Range(-60, 60), Random.Range(-125, -175), 0);
+            float spawnDelay = 1f - (Time.timeSinceLevelLoad * 0.001f);
+            Debug.Log(spawnDelay);
+            if (spawnDelay > 0f)
+                yield return new WaitForSeconds(spawnDelay);
+        }
+        
     }
 }
